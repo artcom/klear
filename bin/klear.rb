@@ -1,0 +1,60 @@
+#!/usr/bin/env ruby
+
+require 'rubygems'
+require 'bundler/setup'
+require 'applix'
+
+$:.unshift File.join(File.dirname(__FILE__), '..', 'lib')
+require 'klear'
+
+def usage
+  puts <<HELP
+klear usage
+
+  klear --help
+    * this help
+  klear [OPTIONS] generate <path_to_png_folder> <kle-file>
+    * Generates kle file from png_folder
+  klear [OPTIONS] regenerate <kle-file>
+    * Regenerates kle file's cache
+  klear info <kle-file>
+    * Produces report on a kle file.
+
+  OPTIONS
+    -- silent:[true/false] - default false
+HELP
+#'
+
+  exit
+end
+
+Defaults = {
+  silent: false,
+  fps: 25,
+  gamma: 1.0
+}
+
+Applix.main(ARGV, Defaults) do
+  prolog do |_, opts|
+    opts[:help] and usage
+    @app = Klear::FileGenerator.new(opts)
+  end
+  
+  handle(:generate) do |*args, opts|
+    (1 < args.size) or usage
+    @app.generate(*args)
+  end
+  
+  handle(:regenerate) do |*args, opts|
+    (0 < args.size) or usage
+    @app.regenerate(*args)
+  end
+  
+ # handle(:info) do |*args, opts|
+ #   (0 < args.size) or usage
+ #   choreograhpy = Klear::Choreography.load args[0]
+ #   puts choreograhpy.info
+ # end
+  
+  handle(:any) {|_, _| usage}
+end
