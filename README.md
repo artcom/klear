@@ -1,5 +1,4 @@
-klear
-=====
+# klear
 
 Create and manage choreographies for motors and lights on the Manta Rhei.
 
@@ -8,9 +7,16 @@ To understand what this is all about please check the Manta Rhei project page:
  - http://www.artcom.de/en/projects/project/detail/manta-rhei/
 
 This gem now is the starting point for refactoring the Manta Rhei code. The klear repo will contain all code for handling the actual content. Running the stepper motors or driving the OLEDs or DMX is part of the kinetic-light-engine which goes online soon.
+
+## File info 
+
+  $ klear info choreo.kle
+
+will show what is in the file. 
  
-Klear file generation
----------------------
+## New File Generation
+
+*Notice: file generation depends on jruby because of its usage of Java JAI*
 
 Klear files are zipped directory structures which are generated from a set of images. The pixel values directly map to motor position and light intensity. On top of that, the klear file contains some additional meta info and cache date to speed up its loading at runtime. Generating a klear file from a images sequence in a directory goes like:
 

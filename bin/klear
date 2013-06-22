@@ -50,11 +50,12 @@ Applix.main(ARGV, Defaults) do
     @app.regenerate(*args)
   end
   
- # handle(:info) do |*args, opts|
- #   (0 < args.size) or usage
- #   choreograhpy = Klear::Choreography.load args[0]
- #   puts choreograhpy.info
- # end
+  handle(:info) do |*args, opts|
+    (0 < args.size) or usage
+    path = args.shift
+    choreo = Klear::Choreography.load(path)
+    puts choreo.info
+  end
   
   handle(:any) {|_, _| usage}
 end
