@@ -1,10 +1,10 @@
 require 'spec_helper'
 
 describe Klear::Choreography do
-  
+
   context 'with test.kle fixture' do
-    let(:path) { "#{RSpec.configuration.fixtures}/test.kle" }
-    let(:choreography) { Klear::Choreography.load(path) }
+    let(:test_kle_path) { "#{RSpec.configuration.fixtures}/test.kle" }
+    let(:choreography) { Klear::Choreography.load(test_kle_path) }
 
     it 'reads kle files' do
       choreography.should be_kind_of(Klear::Choreography)
@@ -61,7 +61,6 @@ describe Klear::Choreography do
       ])
       
       total_size = 0
-      debugger
       frame.columns { |col| total_size += col.size }
       total_size.should eq(frame.data.size)
       

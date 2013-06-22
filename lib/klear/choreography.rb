@@ -8,13 +8,9 @@ class Klear::Choreography
   #  array :numbers, :type => :uint16be, :read_until => :eof
   #end
 
-  attr_reader :geometry, :gamma, :fps
+  attr_reader :archive, :geometry, :gamma, :fps
   attr_accessor :location
 
-  def self.prefetch_playtime path
-    Zip::ZipFile.open(path) { |zip| zip.dir.entries("/frames").size }
-  end
-  
   def self.load path
     #choreo = Zip::ZipFile.open(path) { |klear| new klear }
     self.new(Klear::File.new(path))

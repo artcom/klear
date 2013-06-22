@@ -20,6 +20,10 @@ class Klear::File
     @dimensions ||= info['geometry']
   end
 
+  def frame_count
+    @frame_count ||= (zipfile.dir.entries("/frames").size)
+  end
+
   def frames
     @frames ||= (
       data = zipfile.read("cache/frames.bin")

@@ -9,6 +9,10 @@ describe Klear::File do
     let(:path) { "#{RSpec.configuration.fixtures}/test.kle" }
     let(:klear) { Klear::File.new path }
 
+    it 'calculates playtimes from the number of frames in the zipfile' do
+      klear.frame_count.should eq(264)
+    end
+
     it 'reads info' do
       klear.info.should be_kind_of(Hash)
     end
