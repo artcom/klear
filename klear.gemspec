@@ -28,7 +28,7 @@ Gem::Specification.new do |s|
   s.add_development_dependency 'rb-fsevent', '~>0.9.1'
 
   if RUBY_PLATFORM.match /java/i
-    #s.add_development_dependency 'ruby-debug'
+    s.add_development_dependency 'ruby-debug'
   else
     s.add_development_dependency 'debugger'
   end
