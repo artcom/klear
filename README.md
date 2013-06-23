@@ -1,4 +1,4 @@
-# Kinetic Light Engine Archice - klear
+# Kinetic Light Engine Archive - klear
 
 Create and manage choreographies for motors and lights on the Manta Rhei. This
 document describes the Kinetic Light Engine File Format which contains
