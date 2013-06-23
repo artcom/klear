@@ -72,7 +72,7 @@ Each single PNG represents exactly one frame and is stored with 16-bit / channel
 
 #### Sequence of PNGs
 
-The order of the sequence is defined by the sorting delivered by the Posix command @sort -n@. So any natural alphabetical naming to order the sequence is allowed.
+The order of the sequence is defined by the sorting delivered by the Posix command `sort -n`. So any natural alphabetical naming to order the sequence is allowed.
 
 The number of columns and rows must be the same for all PNGs.
 
@@ -81,7 +81,7 @@ The number of columns and rows must be the same for all PNGs.
  * `A.png, B.png, X.png` is valid sequence of 3 PNGs
  * `Test_0001.png, Test_0002.png, Test__1000.png` is a valid sequence
 
-A sequence does not need to be consecutive (it can have gaps e.g. @01.png,10.png@ is valid and the existence of e.g. 05.png is not enforced).
+A sequence does not need to be consecutive (it can have gaps e.g. `01.png,10.png` is valid and the existence of e.g. 05.png is not enforced).
 
 #### kle.yml
 
@@ -109,7 +109,7 @@ The geometry is determined automatically by reading the first png in the png seq
 The manifest contains meta information about the file and file format itself:
 
  * `Manifest-Version` Version of the manifest itself
- * `Kle-Version` Version of the kle-file format (e.g. @1.0@)
+ * `Kle-Version` Version of the kle-file format (e.g. `1.0`)
  * `Created-By` Tool which created this file.
 
 *Example:*
