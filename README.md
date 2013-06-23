@@ -12,9 +12,9 @@ This gem now is the starting point for refactoring the Manta Rhei code. The klea
 
 ## File info 
 
-  $ klear info choreo.kle
+    $ klear info choreo.kle
 
-will show what is in the file. 
+dumps archive content info to stdout.
  
 ## New File Generation
 
