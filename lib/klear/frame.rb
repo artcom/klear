@@ -8,8 +8,8 @@ class Klear::Frame
     @data = data
   end
 
-  def cell column, row
-    # TODO implement me
+  def cell x, y
+    column(x)[y]
   end
 
   def row no
