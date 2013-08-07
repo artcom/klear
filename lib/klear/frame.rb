@@ -12,6 +12,12 @@ class Klear::Frame
     column(x)[y]
   end
 
+  def each_cell &blk
+    each_row do |row, y|
+      row.each_with_index {|val, x| blk.call(val, x, y)}
+    end
+  end
+
   def row no
     @data.slice(no * @column_count, @column_count)
   end

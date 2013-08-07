@@ -9,6 +9,17 @@ describe Klear::Frame do
     context 'with frame zero from test fixture' do
       let(:frame) { frames.get(0) }
 
+      it 'loops over all cells' do
+        cell_count = 0
+        frame.each_cell do |val, x, y|
+          cell_count += 1
+          expect(val).to eq(frame.cell(x, y))
+          expect(val).to eq(frame.row(y)[x])
+          expect(val).to eq(frame.column(x)[y])
+        end
+        expect(cell_count).to eq(frame.size)
+      end
+
       it 'has row, column and size' do
         frame.row_count.should eq(11)
         frame.column_count.should eq(14)
