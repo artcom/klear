@@ -128,5 +128,4 @@ describe Klear::Choreography do
       choreography.gamma.should eq(1.0)
     end
   end
-  
 end
