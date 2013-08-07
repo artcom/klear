@@ -2,31 +2,6 @@ require 'spec_helper'
 
 describe Klear::Choreography do
 
-  context 'live MADE space bug with klear file loading' do
-    let(:test_kle_path) { "#{RSpec.configuration.fixtures}/diagonal_normal_40.klea" }
-    let(:choreography) { Klear::Choreography.load(test_kle_path) }
-
-    it 'knows about rows' do
-      frame = choreography.frame(0)
-      
-      frame.row(0).should eq([
-        27009, 38885, 47331, 51027, 51233, 49789, 47645,
-        45039, 41857, 38387, 35095, 32101, 29395, 27007])
-      total_size = 0
-      frame.rows {|row| total_size += row.size }
-      total_size.should eq(frame.data.size)
-    
-      total_size = 0
-      frame.rows {|row| total_size += row.size }
-      total_size.should eq(frame.data.size)
-      
-      frame.rows.should be_kind_of(Array)
-      frame.rows[choreography.geometry[:rows] - 1].should eq([
-        33761, 48607, 59165, 63785, 64043, 62237, 59557,
-        56301, 52323, 47985, 43869, 40127, 36745, 33759
-      ])
-    end
-  end
   context 'with test.kle fixture' do
     let(:test_kle_path) { "#{RSpec.configuration.fixtures}/test.kle" }
     let(:choreography) { Klear::Choreography.load(test_kle_path) }
