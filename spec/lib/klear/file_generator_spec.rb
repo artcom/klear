@@ -4,6 +4,14 @@ require 'fileutils'
 
 describe Klear::FileGenerator do
   if RUBY_PLATFORM.match /java/i
+
+    context 'default options' do
+      let(:fg) { Klear::FileGenerator.new }
+      it 'defaults to not overwrite' do 
+        expect(fg.overwrite?).to be(false)
+      end
+    end
+
   
     it "reads a directory with pngs and produces a valid kle file" do
       fg = Klear::FileGenerator.new :fps => 33, :gamma => 2.4

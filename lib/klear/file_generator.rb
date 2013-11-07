@@ -3,24 +3,33 @@
 
 class Klear::FileGenerator
   
+  Defaults = {
+    overwrite: false, 
+  }
+
   def initialize options = {}
+    @options = Defaults.merge(options)
     @png_path = nil
     @kle_path = nil
     @fps = 25
-    if options.has_key? :fps
-      @fps = options[:fps]
+    if @options.has_key? :fps
+      @fps = @options[:fps]
     end
     @gamma = 1.0
-    if options.has_key? :gamma
-      @gamma = options[:gamma]
+    if @options.has_key? :gamma
+      @gamma = @options[:gamma]
     end
     @geometry = nil
     @raw_frame_values = []
     @kle_file = nil
     @silent = true
-    if options.has_key? :silent
-      @silent = !!options[:silent]
+    if @options.has_key? :silent
+      @silent = !!@options[:silent]
     end
+  end
+
+  def overwrite?
+    @options[:overwrite]
   end
   
   def load
@@ -60,8 +69,12 @@ Generated-At: #{Time.now}
   def generate thePngPath, theKleFile
     @png_path = thePngPath
     @kle_path = theKleFile
-    if File.exists? @kle_path
-      raise "File #{@kle_path} already exists"
+    if (File.exists? @kle_path) 
+      if overwrite?
+        FileUtils.rm(@kle_path, force: true)
+      else
+        raise "'#{@kle_path}' :: already exists! (use --overwrite to force it)"
+      end
     end
     write
     report
