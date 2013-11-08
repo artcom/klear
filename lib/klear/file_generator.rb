@@ -39,15 +39,15 @@ class Klear::FileGenerator
   end
   
   def write
-    Zip::ZipFile.open(@kle_path, Zip::ZipFile::CREATE) { |kle|
+    Zip::ZipFile.open(@kle_path, Zip::ZipFile::CREATE) do |kle|
       @kle_file = kle
       add_pngs
       regenerate_cache
       
       # Meta
       kle.mkdir('META-INF')
-      kle.file.open("META-INF/MANIFEST.MF", "w") do |os|
-        os.write <<-MANIFEST
+      kle.file.open("META-INF/MANIFEST.MF", "w") do |fd|
+        fd.write <<-MANIFEST
 Manifest-Version: 1.0
 
 Kle-Version: 1.0
@@ -56,14 +56,15 @@ Generated-At: #{Time.now}
 
         MANIFEST
       end
-      kle.file.open("META-INF/kle.yml", "w") { |os|
-        os.write({
+
+      kle.file.open("META-INF/kle.yml", "w") do |fd|
+        fd.write({
           "geometry"    => @geometry,
           "gamma"       => @gamma,
           "fps"         => @fps
         }.to_yaml)
-      }
-    }
+      end
+    end
   end
   
   def generate thePngPath, theKleFile
