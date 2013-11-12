@@ -9,7 +9,7 @@ require 'klear'
 
 def usage
   puts <<HELP
-klear usage
+klear usage (version: #{Klear::VERSION} - #{Klear::DATE})
 
   klear --help
     * this help
