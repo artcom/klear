@@ -1,51 +1,46 @@
-# Kinetic Light Engine Archive - klear
+# klear: Kinetic Light Engine Archive file format and CLI utitlies
 
-Create and manage choreographies for motors and lights on the Manta Rhei. This
-document describes the Kinetic Light Engine File Format which contains
+The *klear* gem includes library code and the `klear` command line utility to
+create and manage the choreographies for motors and/or lights in kinetic
+installations. It was originally developed as part of the [Manta Rhei
+project][1] but is now extraced for generic use.  
+
+[1]: http://www.artcom.de/en/projects/project/detail/manta-rhei/
+
+This document describes the Kinetic Light Engine File Format which contains
 Choreographies and all data needed for playing it.
 
-To understand what this is all about please check the Manta Rhei project page:
+*(background: The gem is the starting point for refactoring the Manta Rhei
+code. The repo contains all code for handling the actual content while running
+the stepper motors or driving the OLEDs or DMX is part of the
+kinetic-light-engine.)*
 
- - http://www.artcom.de/en/projects/project/detail/manta-rhei/
+## File Format
 
-This gem now is the starting point for refactoring the Manta Rhei code. The klear repo will contain all code for handling the actual content. Running the stepper motors or driving the OLEDs or DMX is part of the kinetic-light-engine which goes online soon.
-
-## File info 
-
-    $ klear info choreo.kle
-
-dumps archive content info to stdout.
- 
-## New File Generation
-
-*Notice: file generation depends on jruby because of its usage of Java JAI*
-
-Klear files are zipped directory structures which are generated from a set of images. The pixel values directly map to motor position and light intensity. On top of that, the klear file contains some additional meta info and cache date to speed up its loading at runtime. Generating a klear file from a images sequence in a directory goes like:
-
-    $ rvm jruby exec ./bin/klear.rb generate image_sequence_dir outfile.kle
-    
-and of course, more documentation needs to come (means must be converted from the internal wiki to here).
-
-## FileFormat
-
-File of this format have the file extension "kle", e.g. "calm_05.kle"
+Files of this format should have the file extension `.kle`, e.g.
+"calm_05.kle".
 
 ### Layout and container Structure
 
-A .kle File contains multiple assets, incl. source PNGs, metatdata and a derived binary file containing frames in packed binary form. The Container Format is ZIP so a .kle file is just a zip-file containing files and folders.
+A .kle File contains multiple assets, incl. source PNGs, metatdata and a
+derived binary file containing frames in packed binary form. The Container
+Format is ZIP so a .kle file is just a zip-file containing files and folders.
 
-*Directory Layout*
+**Directory Layout**
 
-* Directory 'META-INF' (mandatory)
- * 'kle.yml' containing meta-data describing aspects like framerate & more
- * 'MANIFEST.MF' containing meta-data about the kle file itself (e.g. format version)
-* Directory 'frames' (mandatory)
- * Source PNGs which were used to generate the kle
-* Directory 'cache' (optional)
- * File 'frames.bin' containing binary data derived from the PNGs during creation
- * further pre-processed data or application state for optimized restarts might be stored here.
-* Directory 'icon'
- * contains one file 'normal.png' for a normal sized icon (150 x 110 px)
++ *DIR* 'META-INF' (mandatory)
+    + 'kle.yml', YAML file containing meta-data describing aspects like framerate & more
+    + 'MANIFEST.MF' containing meta-data about the klear file itself (e.g.
+      format version)
++ *DIR* 'frames' (mandatory)
+    + Source PNGs files which were used to generate the kle
++ *DIR* cache' (optional)
+    + 'frames.bin', binary file containing data derived from the PNGs during
+      creation
+    + further pre-processed data or application state for optimized restarts
+      might be stored here.
++ *DIR* 'icon'
+    + 'normal.png', PNG file for a normal sized icon (150 x 110 px)
 
 ### Workflow
 
@@ -55,9 +50,28 @@ If a kle file does not have frame.bin in its cache directory it can be regenerat
 
 The source sequence of PNGs is stored in the KLE-file as well, which allows features like frames.bin regeneration in the first place.
 
-### File Format Details
+## Command Line Usage
 
-#### PNGs
+**File info**
+
+    $ klear info choreo.kle
+
+dumps archive content info to stdout.
+ 
+**New File Generation**
+
+*Notice: file generation depends on jruby because of its usage of Java JAI*
+
+Klear files are zipped directory structures which are generated from a set of images. The pixel values directly map to motor position and light intensity. On top of that, the klear file contains some additional meta info and cache date to speed up its loading at runtime. Generating a klear file from a images sequence in a directory goes like:
+
+    $ rvm jruby exec ./bin/klear.rb generate image_sequence_dir outfile.kle
+    
+and of course, more documentation needs to come (means must be converted from the internal wiki to here).
+
+
+## File Format Details
+
+### PNGs
 
 Each single PNG represents exactly one frame and is stored with 16-bit / channel. The size of the PNGs is determined by the number of columns and rows, where each tile is 10px x 10px in size. A Column represents the state of a blade at a frame (a certain point in time). The number of columns represents the number of blades. A Row represents one aspect across all blades, e.g. an outermost light or the state of the motor.
 
@@ -65,12 +79,13 @@ Each single PNG represents exactly one frame and is stored with 16-bit / channel
 
 !Waves_00129.png!
 
- * We have 11 rows and 14 columns (blades)
- * The lowest row describes the motor state
- * The other rows describe the state of the lights from one direction to the other (TODO: Define the direction - what is a point of reference?)
- * The Png then is 140x110px in size.
+* We have 11 rows and 14 columns (blades)
+* The lowest row describes the motor state
+* The other rows describe the state of the lights from one direction to the other (TODO:
+  Define the direction - what is a point of reference?)
+* The Png then is 140x110px in size.
 
-#### Sequence of PNGs
+### Sequence of PNGs
 
 The order of the sequence is defined by the sorting delivered by the Posix command `sort -n`. So any natural alphabetical naming to order the sequence is allowed.
 
@@ -78,12 +93,12 @@ The number of columns and rows must be the same for all PNGs.
 
 *Examples*
 
- * `A.png, B.png, X.png` is valid sequence of 3 PNGs
- * `Test_0001.png, Test_0002.png, Test__1000.png` is a valid sequence
+* `A.png, B.png, X.png` is valid sequence of 3 PNGs
+* `Test_0001.png, Test_0002.png, Test__1000.png` is a valid sequence
 
 A sequence does not need to be consecutive (it can have gaps e.g. `01.png,10.png` is valid and the existence of e.g. 05.png is not enforced).
 
-#### kle.yml
+### kle.yml
 
 Contains information about how to use the frames:
 
@@ -104,7 +119,7 @@ The geometry is determined automatically by reading the first png in the png seq
  fps: 25
 </pre>
 
-#### MANIFEST.MF
+### MANIFEST.MF
 
 The manifest contains meta information about the file and file format itself:
 
@@ -121,9 +136,9 @@ Kle-Version: 1.0
 Created-By: ruby-kle-generator 0.344b
 </pre>
 
-#### frames.bin
+### frames.bin
 
-The frames.bin file contains the extracted 16-bit values sampled from each tile of the PNGs. It contains all frames and each frame contains all columns and rows.
+The frames.bin binary file contains the extracted 16-bit values sampled from each tile of the PNGs. It contains all frames and each frame contains all columns and rows.
 
 Each 16-bit value is saved as unsigned 16 bit integer big endian (network byte order) and uses 2 bytes in frames.bin.
 
