@@ -29,7 +29,8 @@ Format is ZIP so a .kle file is just a zip-file containing files and folders.
 **Directory Layout**
 
 + *DIR* 'META-INF' (mandatory)
-    + 'kle.yml', YAML file containing meta-data describing aspects like framerate & more
+    + 'kle.yml', YAML file containing meta-data describing aspects like
+      framerate & more
     + 'MANIFEST.MF' containing meta-data about the klear file itself (e.g.
       format version)
 + *DIR* 'frames' (mandatory)
@@ -44,11 +45,16 @@ Format is ZIP so a .kle file is just a zip-file containing files and folders.
 
 ### Workflow
 
-The initial source of a kle is a sequence of PNGs + metadata. Those are used to generate a .kle file incl. the file 'frames.bin'. The metadata is stored in 'META-INF/kle.yml' and describes aspects like fps.
+The initial source of a kle is a sequence of PNGs + metadata. Those are used
+to generate a .kle file incl. the file 'frames.bin'. The metadata is stored in
+'META-INF/kle.yml' and describes aspects like fps.
 
-If a kle file does not have frame.bin in its cache directory it can be regenerated. This is also useful for future format changes together with the manifest to detect if a frames.bin is deprecated and needs to be regenerated.
+If a kle file does not have frame.bin in its cache directory it can be
+regenerated. This is also useful for future format changes together with the
+manifest to detect if a frames.bin is deprecated and needs to be regenerated.
 
-The source sequence of PNGs is stored in the KLE-file as well, which allows features like frames.bin regeneration in the first place.
+The source sequence of PNGs is stored in the KLE-file as well, which allows
+features like frames.bin regeneration in the first place.
 
 ## Command Line Usage
 
@@ -62,32 +68,44 @@ dumps archive content info to stdout.
 
 *Notice: file generation depends on jruby because of its usage of Java JAI*
 
-Klear files are zipped directory structures which are generated from a set of images. The pixel values directly map to motor position and light intensity. On top of that, the klear file contains some additional meta info and cache date to speed up its loading at runtime. Generating a klear file from a images sequence in a directory goes like:
+Klear files are zipped directory structures which are generated from a set of
+images. The pixel values directly map to motor position and light intensity.
+On top of that, the klear file contains some additional meta info and cache
+date to speed up its loading at runtime. Generating a klear file from a images
+sequence in a directory goes like:
 
     $ rvm jruby exec ./bin/klear.rb generate image_sequence_dir outfile.kle
     
-and of course, more documentation needs to come (means must be converted from the internal wiki to here).
+and of course, more documentation needs to come (means must be converted from
+the internal wiki to here).
 
 
 ## File Format Details
 
 ### PNGs
 
-Each single PNG represents exactly one frame and is stored with 16-bit / channel. The size of the PNGs is determined by the number of columns and rows, where each tile is 10px x 10px in size. A Column represents the state of a blade at a frame (a certain point in time). The number of columns represents the number of blades. A Row represents one aspect across all blades, e.g. an outermost light or the state of the motor.
+Each single PNG represents exactly one frame and is stored with 16-bit /
+channel. The size of the PNGs is determined by the number of columns and rows,
+where each tile is 10px x 10px in size. A Column represents the state of a
+blade at a frame (a certain point in time). The number of columns represents
+the number of blades. A Row represents one aspect across all blades, e.g. an
+outermost light or the state of the motor.
 
-*Example*
+**Example**
 
-!Waves_00129.png!
+![Waves_00129.png](spec/fixtures/kle_generate/Waves/Waves_00129.png)
 
 * We have 11 rows and 14 columns (blades)
-* The lowest row describes the motor state
-* The other rows describe the state of the lights from one direction to the other (TODO:
-  Define the direction - what is a point of reference?)
-* The Png then is 140x110px in size.
+* (as a convention) buttom row describes the motor state
+* Other rows describe the state of the lights from one direction to the
+  other (TODO: Define the direction - what is a point of reference?)
+* The PNG is 140px by 110px in size.
 
 ### Sequence of PNGs
 
-The order of the sequence is defined by the sorting delivered by the Posix command `sort -n`. So any natural alphabetical naming to order the sequence is allowed.
+The order of the sequence is defined by the sorting delivered by the Posix
+command `sort -n`. So any natural alphabetical naming to order the sequence is
+allowed.
 
 The number of columns and rows must be the same for all PNGs.
 
@@ -96,18 +114,21 @@ The number of columns and rows must be the same for all PNGs.
 * `A.png, B.png, X.png` is valid sequence of 3 PNGs
 * `Test_0001.png, Test_0002.png, Test__1000.png` is a valid sequence
 
-A sequence does not need to be consecutive (it can have gaps e.g. `01.png,10.png` is valid and the existence of e.g. 05.png is not enforced).
+A sequence does not need to be consecutive (it can have gaps e.g.
+`01.png,10.png` is valid and the existence of e.g. 05.png is not enforced).
 
 ### kle.yml
 
-Contains information about how to use the frames:
+Contains information fields about how to use the frames:
 
  * Number of columns and rows (geometry)
  * Frames per second
  * recommended gamma value
- * Potentially a free descriptor (name)
+ * descriptor (optional)
 
-The geometry is determined automatically by reading the first png in the png sequence and dividing width and height by 10 respectively. This relies on one tile in the png being 10x10px in size.
+The geometry is determined automatically by reading the first png in the png
+sequence and dividing width and height by 10 respectively. This relies on one
+tile in the png being 10x10px in size.
 
 *Example:*
 <pre>
@@ -138,9 +159,12 @@ Created-By: ruby-kle-generator 0.344b
 
 ### frames.bin
 
-The frames.bin binary file contains the extracted 16-bit values sampled from each tile of the PNGs. It contains all frames and each frame contains all columns and rows.
+The frames.bin binary file contains the extracted 16-bit values sampled from
+each tile of the PNGs. It contains all frames and each frame contains all
+columns and rows.
 
-Each 16-bit value is saved as unsigned 16 bit integer big endian (network byte order) and uses 2 bytes in frames.bin.
+Each 16-bit value is saved as unsigned 16 bit integer big endian (network byte
+order) and uses 2 bytes in frames.bin.
 
 A PNG with 11 rows and 14 columns uses `14 x 11 x 2 bytes = 308 bytes`.
 
@@ -166,4 +190,4 @@ which results in a binary big endian (network) byte order sequence like:
 
     0xBA1D 0xAFEF 0xA381    0xC753 0xC821 0xC27D    0x6981 0x97E5 0xB8E3
 
-As a note: row 1 is the motor state.
+*(note: row 1 is the motor state by convention)*
