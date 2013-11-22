@@ -8,22 +8,25 @@ $:.unshift File.join(File.dirname(__FILE__), '..', 'lib')
 require 'klear'
 
 def usage
-  puts <<HELP
+  puts <<-HELP
 klear usage (version: #{Klear::VERSION} - #{Klear::DATE})
 
   klear --help
     * this help
-  klear [OPTIONS] generate <path_to_png_folder> <kle-file>
-    * Generates kle file from png_folder
-  klear [OPTIONS] regenerate <kle-file>
-    * Regenerates kle file's cache
-  klear info <kle-file>
-    * Produces report on a kle file.
+
+  klear [OPTIONS] generate <path to PNG files folder> <klear-file>
+    * Generates klear file from png_folder
+
+  klear [OPTIONS] regenerate <klear-file>
+    * Regenerates klear file's cache
+
+  klear info <klear-file>
+    * Produces report on a klear file.
 
   OPTIONS
-    -- silent:[true/false] - default false
-HELP
-#'
+    --silent:[true/false]  : default false
+    --overwrite            : force overwriting of existing files
+  HELP
 
   exit
 end
@@ -37,11 +40,12 @@ Defaults = {
 Applix.main(ARGV, Defaults) do
   prolog do |_, opts|
     opts[:help] and usage
+    $silent = opts[:silent]
     @app = Klear::FileGenerator.new(opts)
   end
   
   handle(:generate) do |*args, opts|
-    (1 < args.size) or usage
+    (2 <= args.size) or usage
     @app.generate(*args)
   end
   
