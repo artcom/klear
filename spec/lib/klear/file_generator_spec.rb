@@ -3,8 +3,9 @@ require 'tmpdir'
 require 'fileutils'
 
 describe Klear::FileGenerator do
-  if RUBY_PLATFORM.match /java/i
-
+  unless RUBY_PLATFORM.match /java/i
+    pending 'porting tests from jruby'
+  else
     context 'default options' do
       let(:fg) { Klear::FileGenerator.new }
       it 'defaults to not overwrite' do 
@@ -85,5 +86,4 @@ describe Klear::FileGenerator do
       FileUtils.rmtree tmpDir
     end
   end # JAVA
-
 end
