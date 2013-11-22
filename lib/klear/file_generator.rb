@@ -1,10 +1,8 @@
-# TODO maybe use Zip::ZipOutputStream for generating the zip first in-memory?
-# TODO extract java/jruby specific stuff
-
 class Klear::FileGenerator
   
   Defaults = {
     overwrite: false, 
+    pixel_scale: [10, 10],
   }
 
   def initialize options = {}
@@ -22,10 +20,10 @@ class Klear::FileGenerator
     @geometry = nil
     @raw_frame_values = []
     @kle_file = nil
-    @silent = true
-    if @options.has_key? :silent
-      @silent = !!@options[:silent]
-    end
+  end
+
+  def pixel_scale
+    @options[:pixel_scale]
   end
 
   def overwrite?
@@ -33,33 +31,33 @@ class Klear::FileGenerator
   end
   
   def load
-    Zip::ZipFile.open(@kle_path) { |kle|
-      @kle_file = kle
-    }
+    Zip::ZipFile.open(@kle_path) { |kle| @kle_file = kle }
   end
   
-  def write
-    Zip::ZipFile.open(@kle_path, Zip::ZipFile::CREATE) do |kle|
-      @kle_file = kle
-      add_pngs
-      regenerate_cache
+  def write(path)
+    # TODO:  maybe use Zip::ZipOutputStream to generate zip file in-memory?
+    Zip::ZipFile.open(path, Zip::ZipFile::CREATE) do |klear|
+      @kle_file = klear
+      add_pngs(@kle_file)
+      recache
       
       # Meta
-      kle.mkdir('META-INF')
-      kle.file.open("META-INF/MANIFEST.MF", "w") do |fd|
+      klear.mkdir('META-INF')
+      klear.file.open("META-INF/MANIFEST.MF", "w") do |fd|
         fd.write <<-MANIFEST
 Manifest-Version: 1.0
 
-Kle-Version: 1.0
+Kle-Version: 1.1
 Created-By: #{__FILE__} (#{Klear::VERSION})
 Generated-At: #{Time.now}
 
         MANIFEST
       end
 
-      kle.file.open("META-INF/kle.yml", "w") do |fd|
+      klear.file.open("META-INF/kle.yml", "w") do |fd|
         fd.write({
           "geometry"    => @geometry,
+          "pixel_scale" => pixel_scale,
           "gamma"       => @gamma,
           "fps"         => @fps
         }.to_yaml)
@@ -77,7 +75,7 @@ Generated-At: #{Time.now}
         raise "'#{@kle_path}' :: already exists! (use --overwrite to force it)"
       end
     end
-    write
+    write(@kle_path)
     report
   end
   
@@ -94,79 +92,100 @@ Output KleFile : '#{@kle_path}'
     * geometry : #{@geometry}
 
     REPORT
-    puts report if !@silent
+    puts report if !$silent
   end
   
   def regenerate theKleFile
     @kle_path = theKleFile
     load
-    regenerate_cache
+    recache
   end
   
   private
   
-  def add_pngs
-    @kle_file.mkdir('frames')
+  def add_pngs(klear)
+    klear.mkdir('frames')
     Dir.glob("#{@png_path}/*.png") do |file|
-      puts " * adding png file '#{file}' to '#{@kle_path}'" if !@silent
-      @kle_file.add("frames/#{File.basename(file)}", file)
+      puts " * adding png file '#{file}' to '#{@kle_path}'" if !$silent
+      klear.add("frames/#{File.basename(file)}", file)
     end
   end
   
-  def regenerate_cache
-    puts "regenerating cache..." if !@silent
+  def recache
+    puts "regenerating cache..." if !$silent
     if @kle_file.dir.entries("/").include?("cache")
       @kle_file.dir.rmdir('cache')
     end
     @kle_file.dir.mkdir('cache')
     if @raw_frame_values.empty?
-      analyze_images
+      @raw_frame_values = analyze_images(@kle_file)
     end
-    @kle_file.file.open("cache/frames.bin", "wb") { |os|
+    @kle_file.file.open("cache/frames.bin", "wb") do |os|
       arr = BinData::Array.new(:type => :uint16be)
       arr.assign @raw_frame_values
       arr.write(os)
-    }
+    end
     @kle_file.commit
   end
   
+# TODO: extract java/jruby specific stuff
 if RUBY_PLATFORM.match /java/i
   include Java
   import 'javax.media.jai.JAI'
   import 'com.sun.media.jai.codec.ByteArraySeekableStream'
 
-  def analyze_images
-    @kle_file.dir.entries("/frames").each { |png|
-      puts "analyzing image file '#{png}'" if !@silent
-      seekable = ByteArraySeekableStream.new(@kle_file.file.read("/frames/#{png}").to_java_bytes)
-      image = JAI.create("stream", seekable)
-      @raw_frame_values = @raw_frame_values + analyze_image(image)
-    }
+  def analyze_images(klear)
+    bytes = []
+    klear.dir.entries("/frames").each do |png|
+      puts "analyzing image file '#{png}'" if !$silent
+      image = load_image(klear.file.read("/frames/#{png}"))
+      bytes.concat(analyze_image(image, pixel_scale))
+    end
+    bytes
   end
 
-  def analyze_image image
-    if !@geometry
-      @geometry = { :columns => image.width  / 10,
-                    :rows    => image.height / 10 }
-      puts "Determined geometry: #{@geometry.inspect}" if !@silent
-    end
+  def load_image(ruby_bytes)
+      istream = ByteArraySeekableStream.new(ruby_bytes.to_java_bytes)
+      image = JAI.create("stream", istream)
+
+      if @geometry.nil? # first loaded image defines the geometry
+        xs, ys = *pixel_scale
+        @geometry = {columns: image.width / xs, rows: image.height / ys}
+        puts "Determined geometry: #{@geometry.inspect}" if !$silent
+
+        if(image.width.modulo(xs) != 0) or (image.height.modulo(ys) != 0) 
+          raise "image size / pixel scale mismatch: #{@geometry} - #{p@ixel_scale}"
+        end
+      end
+
+      image
+  end
+
+  def analyze_image(image, pixel_scale)
+    #@geometry ||= (
+    #  puts "Determined geometry: #{@geometry.inspect}" if !$silent
+    #  {columns: image.width  / 10, rows: image.height / 10}
+    #)
+
+    xs, ys = *pixel_scale
+    xc, yc = image.width / xs, image.height / ys
 
     raster = image.getData
     bytes = []
-    (0...@geometry[:rows]).to_a.reverse!.each { |row|
-      (0...@geometry[:columns]).each { |col|
-        myPixelY = 5 + 10 * (row)
-        myPixelX = 5 + 10 * (col)
-        myPickedValue = raster.getPixel(myPixelX, myPixelY, nil)[0].to_i
-        #puts "value at (col #{col}, #{@geometry[:rows] - row - 1}) - pixel-coords: (#{myPixelX}, #{myPixelY}) => #{myPickedValue}"
-        bytes << myPickedValue
-      }
-    }
+    (0...yc).to_a.reverse!.each do |row|
+      (0...xc).each do |col|
+        yi = (row + 0.5) * ys    # 5 + 10 * (row)
+        xi = (col + 0.5) * xs # 5 + 10 * (col)
+        val = raster.getPixel(xi, yi, nil)[0].to_i
+        #puts "value at (col #{col}, #{@geometry[:rows] - row - 1}) - pixel-coords: (#{xi}, #{yi}) => #{val}"
+        bytes << val
+      end
+    end
     bytes
   end
 
 else # NOT JAVA!
-  def analyze_images
+  def analyze_images(*_)
     raise "use JRUBY to run this script with #analyse_images support"
   end
 end
