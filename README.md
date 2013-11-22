@@ -76,9 +76,7 @@ sequence in a directory goes like:
 
     $ rvm jruby exec ./bin/klear.rb generate image_sequence_dir outfile.kle
     
-and of course, more documentation needs to come (means must be converted from
-the internal wiki to here).
-
+and of course, more documentation needs to come.
 
 ## File Format Details
 
