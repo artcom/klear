@@ -12,7 +12,6 @@ describe Klear::FileGenerator do
         expect(fg.overwrite?).to be(false)
       end
     end
-
   
     it "reads a directory with pngs and produces a valid kle file" do
       fg = Klear::FileGenerator.new :fps => 33, :gamma => 2.4

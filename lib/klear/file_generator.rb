@@ -105,7 +105,7 @@ Output KleFile : '#{@kle_path}'
   
   def add_pngs(klear)
     klear.mkdir('frames')
-    Dir.glob("#{@png_path}/*.png") do |file|
+    Klear::AnimationOrder.glob("#{@png_path}/*.png") do |file|
       puts " * adding png file '#{file}' to '#{@kle_path}'" if !$silent
       klear.add("frames/#{File.basename(file)}", file)
     end
