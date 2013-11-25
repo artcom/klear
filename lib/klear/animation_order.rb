@@ -8,14 +8,18 @@ module Klear::AnimationOrder
 
   def sort(filenames)
     filenames.sort do |a, b| 
-      frame_number_from_string(a) <=> frame_number_from_string(b)
+      begin
+        frame_number_from_string(a) <=> frame_number_from_string(b)
+      rescue ArgumentError => e
+        a <=> b
+      end
     end
   end
 
   def frame_number_from_string(filename)
     Integer(filename.tr('^0-9', '').sub(/^0+(\d)/, '\1'))
   rescue ArgumentError => e
-    raise "no frame number in filename: '#{filename}' - #{e}"
+    raise e, "no frame number in filename: '#{filename}' - #{e}"
   end
 
   extend(self)

@@ -53,8 +53,9 @@ If a kle file does not have frame.bin in its cache directory it can be
 regenerated. This is also useful for future format changes together with the
 manifest to detect if a frames.bin is deprecated and needs to be regenerated.
 
-The source sequence of PNGs is stored in the KLE-file as well, which allows
-features like frames.bin regeneration in the first place.
+The source sequence of PNGs is stored in the KLE-file as well. Having the source
+PNGs included with the archives allows for resampling of `frames.bin` and other
+manipulations later on.
 
 ## Command Line Usage
 
@@ -101,19 +102,27 @@ outermost light or the state of the motor.
 
 ### Sequence of PNGs
 
-The order of the sequence is defined by the sorting delivered by the Posix
-command `sort -n`. So any natural alphabetical naming to order the sequence is
-allowed.
-
-The number of columns and rows must be the same for all PNGs.
+The order of the sequence is determined by the **intuitiv** numerial order of the file names. This is done by extracting digits from the filenames and than sort them numerial. This is different than the directory listing order in some cases where the frame number is embedded in the filename or is not padded with a leading zero. When no frame numbe is present in the filenames the sorting is in normal alphabetical order.
 
 *Examples*
 
 * `A.png, B.png, X.png` is valid sequence of 3 PNGs
-* `Test_0001.png, Test_0002.png, Test__1000.png` is a valid sequence
+* `Test_0001.png, Test_0002.png, Test_1000.png` is a valid sequence
 
 A sequence does not need to be consecutive (it can have gaps e.g.
 `01.png,10.png` is valid and the existence of e.g. 05.png is not enforced).
+
+*Sequence Order:* 
+
+      ls -1 (shell order) | intuitive Animation Order
+    ----------------------+-------------------------------------
+      frame_1.png         | frame_1.png      
+      frame_10.png        | frame_2.png     
+      frame_100.png       | frame_10.png    
+      frame_12.png        | frame_12.png     
+      frame_2.png         | frame_100.png      
+
+The number of columns and rows must be the same for all PNGs.
 
 ### kle.yml
 
@@ -122,6 +131,7 @@ Contains information fields about how to use the frames:
  * Number of columns and rows (geometry)
  * Frames per second
  * recommended gamma value
+ * pixel scale for the input PNGs
  * descriptor (optional)
 
 The geometry is determined automatically by reading the first png in the png
@@ -138,6 +148,18 @@ tile in the png being 10x10px in size.
  fps: 25
 </pre>
 
+## Klear file version 1.1 format update
+
+*Kle-Version: 1.1*
+<pre>
+ pixel_scale:
+ - 30
+ - 30
+</pre>
+
+In version 1.1 the pixel_scale attribute is added which was fixed to 10px pixel before. The pixel scale defines the amout of pixels per axis, default value is 10px. This means a 10x10 pixel square in the input PNG stands for one axis. For easier visibility now pixel scale can be manually overwridden. For installations with few axises, for example 10 by 2, it might be reasonable to define pixel scale as 30. This would result in a PNG size of  300 by 60 pixel, which is much easier to review on the computer screen than a 10 by 2 pixel image.  
+
+
 ### MANIFEST.MF
 
 The manifest contains meta information about the file and file format itself:
@@ -151,8 +173,8 @@ The manifest contains meta information about the file and file format itself:
 <pre>
 Manifest-Version: 1.0
 
-Kle-Version: 1.0
-Created-By: ruby-kle-generator 0.344b
+Kle-Version: 1.1
+Created-By: bin/klear (0.1.5)
 </pre>
 
 ### frames.bin

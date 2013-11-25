@@ -5,12 +5,21 @@ describe Klear::AnimationOrder do
 
   it 'globs animation from directory' do
     ao_dir = "#{RSpec.configuration.fixtures}/animation_order"
-    expect(ao.glob("#{ao_dir}/*.png")).to eq(%W(
+    expect(ao.glob("#{ao_dir}/frame_*.png")).to eq(%W(
       #{ao_dir}/frame_1.png
       #{ao_dir}/frame_2.png
       #{ao_dir}/frame_10.png
       #{ao_dir}/frame_12.png
       #{ao_dir}/frame_100.png
+    ))
+  end
+
+  it 'globs files without frame number' do
+    ao_dir = "#{RSpec.configuration.fixtures}/animation_order"
+    expect(ao.glob("#{ao_dir}/?.png")).to eq(%W(
+      #{ao_dir}/a.png
+      #{ao_dir}/b.png
+      #{ao_dir}/x.png
     ))
   end
 

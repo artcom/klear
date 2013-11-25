@@ -2,23 +2,20 @@ class Klear::FileGenerator
   
   Defaults = {
     overwrite: false, 
+    fps: 25,
+    gamma: 1.0,
     pixel_scale: [10, 10],
   }
 
   def initialize options = {}
     @options = Defaults.merge(options)
+    @fps = @options[:fps]
+    @gamma = @options[:gamma]
+
+    @raw_frame_values = []
     @png_path = nil
     @kle_path = nil
-    @fps = 25
-    if @options.has_key? :fps
-      @fps = @options[:fps]
-    end
-    @gamma = 1.0
-    if @options.has_key? :gamma
-      @gamma = @options[:gamma]
-    end
     @geometry = nil
-    @raw_frame_values = []
     @kle_file = nil
   end
 
@@ -31,7 +28,7 @@ class Klear::FileGenerator
   end
   
   def load
-    Zip::ZipFile.open(@kle_path) { |kle| @kle_file = kle }
+    Zip::ZipFile.open(@kle_path) {|kle| @kle_file = kle}
   end
   
   def write(path)
