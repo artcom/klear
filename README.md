@@ -192,8 +192,6 @@ which results in a binary big endian (network) byte order sequence like:
 
     0xBA1D 0xAFEF 0xA381    0xC753 0xC821 0xC27D    0x6981 0x97E5 0xB8E3
 
-*(note: row 1 is the motor state by convention)*
-
 ## Command Line Usage
 
 For ruby users this gem contains the klear command line utility to manage klear
